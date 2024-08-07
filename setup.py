@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import os
 
 setup(
     name="geom_cairo",
@@ -10,5 +11,8 @@ setup(
     long_description=open("README.md").read(),
     install_requires=[
         "pycairo",
+        "numpy",
+        "pillow",
+        "geom @ file://localhost/%s/../geom/" % os.getcwd().replace("\\", "/"),
     ],
 )
