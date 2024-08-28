@@ -1,4 +1,4 @@
-from geom.data.rect import Rect
+from geom.data.rectangle import Rectangle
 from geom.data.circle import Circle
 from geom.data.ellipse import Ellipse
 from geom.data.polygon import Polygon
@@ -16,7 +16,7 @@ from .cairo.ctx import (
     clear_canvas,
     set_range,
     set_bounds,
-    rect,
+    rectangle,
     circle,
     arc,
     ellipse,
@@ -61,7 +61,7 @@ def setup_dpi(size=[8.5, 11], ppi=300, clear_color=[0, 0, 100]):
 def clear(clear_color):
     # draw a rect over the bounds
     x, y, w, h = get_canvas_bounds()
-    rect(x, y, w, h, attribs={"fill": clear_color})
+    rectangle(x, y, w, h, attribs={"fill": clear_color})
 
 
 def draw(dat, attribs=None):
@@ -72,7 +72,7 @@ def draw(dat, attribs=None):
             # draw it as a point
             if (
                 (type(item) == list or isinstance(item, np.ndarray))
-                and len(item) == 2
+                and (len(item) == 2 or len(item) == 3)
                 and isinstance(item[0], float)
             ):
                 draw(Point(item), attribs=attribs)
@@ -83,8 +83,8 @@ def draw(dat, attribs=None):
     # invoke attribs function if it exists
     attrs = dat.attribs if hasattr(dat, "attribs") else attribs
 
-    if isinstance(dat, Rect):
-        rect(dat.x, dat.y, dat.w, dat.h, attribs=attrs)
+    if isinstance(dat, Rectangle):
+        rectangle(dat.x, dat.y, dat.w, dat.h, attribs=attrs)
 
     elif isinstance(dat, Circle):
         x, y = dat.center
@@ -113,8 +113,7 @@ def draw(dat, attribs=None):
         line(x0, y0, x1, y1, attribs=attrs)
 
     elif isinstance(dat, Cubic):
-        p0, p1, p2, p3 = dat.points
-        curve(p0, p1, p2, p3, attribs=attribs)
+        curve(dat.points.tolist(), attribs=attribs)
 
     elif isinstance(dat, Point):
         point(dat.pt, attribs=attrs)
@@ -138,9 +137,7 @@ def write_out():
     from datetime import datetime
 
     surface_out().save(
-        "/Users/kylestew/Downloads/"
-        + datetime.now().strftime("%Y%m%d-%H%M%S")
-        + ".png"
+        "/Users/kylestew/Downloads/" + datetime.now().strftime("%Y%m%d-%H%M%S") + ".png"
     )
 
 

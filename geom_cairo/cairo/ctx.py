@@ -230,13 +230,13 @@ def line(x0, y0, x1, y1, attribs=None):
     apply_attribs(attribs)
 
 
-def rect(x, y, w, h, attribs=None):
+def rectangle(x, y, w, h, attribs=None):
     _ctx.rectangle(x, y, w, h)
     apply_attribs(attribs)
 
 
 def point(xy, attribs=None):
-    [x, y] = xy
+    x, y = xy[0], xy[1]  # Extract the x and y coordinates
 
     pt_size = 1.0
     if attribs != None and "point_size" in attribs.keys():
@@ -290,21 +290,41 @@ def arc(cx, cy, r, start, end, attribs=None):
     apply_attribs(attribs)
 
 
-def curve(a, b, c, d, attribs=None):
+def curve(xy, attribs=None):
     """
-    curve_to(x1: float, y1: float, x2: float, y2: float, x3: float, y3: float)→ None
-
-    Adds a cubic Bézier spline to the path from the current point to
-    position (x3, y3) in user-space coordinates, using (x1, y1)
-    and (x2, y2) as the control points. After this call the current
-    point will be (x3, y3).
-
-    If there is no current point before the call to curve_to() this
-    function will behave as if preceded by a call to ctx.move_to(x1, y1).
-
     https://pycairo.readthedocs.io/en/latest/reference/context.html#cairo.Context.curve_to
     """
-    _ctx.move_to(a[0], a[1])
-    _ctx.curve_to(b[0], b[1], c[0], c[1], d[0], d[1])
+    # Check if the input has enough points
+    if len(xy) < 4:
+        raise ValueError(
+            "At least 4 control points are required to draw a cubic Bézier curve."
+        )
 
+    # Start drawing from the first point
+    _ctx.move_to(xy[0][0], xy[0][1])
+
+    # Iterate over the array in chunks of 4 points
+    for i in range(
+        0, len(xy) - 3, 3
+    ):  # Step by 3 to overlap the end point with the next segment's start point
+        _ctx.curve_to(
+            xy[i + 1][0],
+            xy[i + 1][1],
+            xy[i + 2][0],
+            xy[i + 2][1],
+            xy[i + 3][0],
+            xy[i + 3][1],
+        )
+
+    # Wrap around: connect the last segment back to the first point
+    _ctx.curve_to(
+        xy[-2][0],
+        xy[-2][1],  # Second-to-last control point
+        xy[-1][0],
+        xy[-1][1],  # Last control point
+        xy[0][0],
+        xy[0][1],  # End at the first point to close the curve
+    )
+
+    # Apply any additional attributes if provided
     apply_attribs(attribs)
